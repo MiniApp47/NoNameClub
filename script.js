@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
       url: "https://wa.me/33771468334",
       id: "whatsapp",
       className: "whatsapp",
-      text: "🟢 WHATSAPP — COMMANDER",
+      text: "🟢 WHATSAPP",
     },
     {
       name: "CANAL TELEGRAM",
@@ -52,21 +52,21 @@ document.addEventListener("DOMContentLoaded", function () {
       url: "https://t.me/nonameclub75",
       id: "telegram-contact",
       className: "telegram-contact",
-      text: "🔷 CONTACT TELEGRAM @nonameclub75",
+      text: "🔷 CONTACT TELEGRAM",
     },
     {
       name: "TATO TALK / MENU",
       url: "https://tato.im/nonameclub75",
       id: "potato-main",
       className: "potato",
-      text: "🥔 TATO TALK / MENU",
+      text: "🥔 TATO TALK ",
     },
     {
       name: "INSTAGRAM",
       url: "https://www.instagram.com/nonameclub75?stkn=MTVrNXJ3dXhlMDh1cA%3D%3D&utm_source=qr",
       id: "instagram",
       className: "instagram",
-      text: "🟣 INSTAGRAM @nonameclub75",
+      text: "🟣 INSTAGRAM",
     },
   ];
 
@@ -452,6 +452,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentCategoryId = null; // Garde en mémoire la catégorie sélectionnée
   let currentFarmId = null; // Garde en mémoire la farm sélectionnée
   let appliedPromo = null; // Pour suivre le code promo
+  let fulfillmentMethod = null; // "Meet Up" ou "Livraison" — choix obligatoire
+  let deliveryAddress = ""; // Adresse utilisée uniquement pour une livraison
   let paymentMethod = "Espèce"; // Méthode de paiement par défaut
 
   // --- DÉFINIS TES CODES PROMO ICI ---
@@ -1189,6 +1191,7 @@ document.addEventListener("DOMContentLoaded", function () {
       cartContainer.innerHTML = "<p>Votre panier est vide.</p>";
       document.getElementById("cart-total-price").innerText = "0.00€";
       updateCartCount();
+      syncOrderOptionsUI();
       return;
     }
 
@@ -1217,6 +1220,53 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("cart-total-price").innerText =
       `${total.toFixed(2)}€`;
     updateCartCount();
+    syncOrderOptionsUI();
+  }
+
+  function syncOrderOptionsUI() {
+    document.querySelectorAll(".fulfillment-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.fulfillment === fulfillmentMethod);
+    });
+
+    document.querySelectorAll(".payment-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.method === paymentMethod);
+    });
+
+    const addressWrap = document.getElementById("delivery-address-wrap");
+    const addressInput = document.getElementById("delivery-address");
+
+    if (addressWrap) {
+      addressWrap.classList.toggle("visible", fulfillmentMethod === "Livraison");
+    }
+
+    if (addressInput && addressInput.value !== deliveryAddress) {
+      addressInput.value = deliveryAddress;
+    }
+  }
+
+  function validateOrderOptions() {
+    if (!fulfillmentMethod) {
+      showNotification("⚠️ Choisis MEET UP ou LIVRAISON.");
+      return false;
+    }
+
+    if (fulfillmentMethod === "Livraison") {
+      const addressInput = document.getElementById("delivery-address");
+      deliveryAddress = addressInput ? addressInput.value.trim() : deliveryAddress.trim();
+
+      if (!deliveryAddress) {
+        showNotification("📍 Renseigne ton adresse de livraison.");
+        if (addressInput) addressInput.focus();
+        return false;
+      }
+    }
+
+    if (!paymentMethod) {
+      showNotification("💳 Choisis ESPÈCE ou CRYPTO.");
+      return false;
+    }
+
+    return true;
   }
 
   // Affiche la page de confirmation (VERSION WHATSAPP DIRECT)
@@ -1317,6 +1367,15 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="summary-line total">
             <span>💰 Total final:</span>
             <span>${totalPrice.toFixed(2)}€</span>
+        </div>
+        <div class="confirmation-order-options">
+            <div><strong>📍 Mode :</strong> ${fulfillmentMethod === "Livraison" ? "🚚 Livraison" : "🤝 Meet Up"}</div>
+            ${
+              fulfillmentMethod === "Livraison"
+                ? `<div><strong>🏠 Adresse :</strong> ${deliveryAddress.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`
+                : ""
+            }
+            <div><strong>💳 Paiement :</strong> ${paymentMethod === "Crypto" ? "₿ Crypto" : "💵 Espèce"}</div>
         </div>
     `;
     summaryContainer.innerHTML = summaryHTML;
@@ -1562,9 +1621,17 @@ document.addEventListener("DOMContentLoaded", function () {
       message += `*💰 TOTAL: ${totalPrice.toFixed(2)}€*\n`;
     }
 
-    // Pied de page
-    message += `\n📍 Livraison à convenir\n`;
-    message += `💳 Paiement: ${paymentMethod}`;
+    // Mode de récupération + adresse + paiement
+    message += `\n*📦 MODE DE RÉCUPÉRATION:*\n`;
+    if (fulfillmentMethod === "Livraison") {
+      message += `🚚 LIVRAISON\n`;
+      message += `📍 Adresse: ${deliveryAddress}\n`;
+    } else {
+      message += `🤝 MEET UP\n`;
+      message += `📍 Point de rendez-vous: à convenir\n`;
+    }
+
+    message += `\n*💳 PAIEMENT:* ${paymentMethod === "Crypto" ? "₿ CRYPTO" : "💵 ESPÈCE"}`;
 
     return message;
   }
@@ -1674,6 +1741,13 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Clics sur le reste de la page
+  // Mémorise l'adresse saisie même si l'utilisateur change de page
+  document.addEventListener("input", (event) => {
+    if (event.target && event.target.id === "delivery-address") {
+      deliveryAddress = event.target.value;
+    }
+  });
+
   document.body.addEventListener("click", async function (e) {
     const target = e.target;
 
@@ -1813,13 +1887,23 @@ document.addEventListener("DOMContentLoaded", function () {
       renderConfirmation(); // Met à jour la page
     }
 
+    // Clic sur MEET UP / LIVRAISON
+    if (target.closest(".fulfillment-btn")) {
+      fulfillmentMethod = target.closest(".fulfillment-btn").dataset.fulfillment;
+      syncOrderOptionsUI();
+
+      if (fulfillmentMethod === "Livraison") {
+        const addressInput = document.getElementById("delivery-address");
+        if (addressInput) setTimeout(() => addressInput.focus(), 80);
+      }
+      return;
+    }
+
     // Clic sur un bouton de paiement
     if (target.closest(".payment-btn")) {
       paymentMethod = target.closest(".payment-btn").dataset.method;
-      // Pas besoin de rafraîchir toute la page, juste les boutons
-      document.querySelectorAll(".payment-btn").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.method === paymentMethod);
-      });
+      syncOrderOptionsUI();
+      return;
     }
 
     // Clic sur "Ajouter au panier"
@@ -1871,6 +1955,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Clic sur "Commander"
     if (target.closest("#checkout-button")) {
+      if (cart.length === 0) {
+        showNotification("🛒 Ton panier est vide.");
+        return;
+      }
+
+      if (!validateOrderOptions()) return;
       renderConfirmation();
     }
 
@@ -1890,6 +1980,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Clic sur "Confirmer la commande" (VERSION WHATSAPP DIRECT)
     if (target.closest("#confirm-order-button")) {
+      if (!validateOrderOptions()) {
+        showPage("page-cart");
+        syncOrderOptionsUI();
+        return;
+      }
+
       // 1. TON NUMÉRO WHATSAPP (Format international sans le +)
       const myPhoneNumber = "33771468334";
 

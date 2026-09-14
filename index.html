@@ -700,7 +700,7 @@
         #notification-toast {
             visibility: hidden;
             min-width: 250px;
-                background-color: #e57307a1;
+                background-color:var(--nnc-gold);
     color: var(--background-color);
             text-align: center;
             border-radius: 10px;
@@ -1536,13 +1536,6 @@
             --nnc-panel: rgba(13, 7, 22, 0.88);
         }
 
-        body {
-            background:
-                radial-gradient(circle at 50% -10%, rgba(143, 45, 255, 0.32), transparent 38%),
-                radial-gradient(circle at 92% 35%, rgba(99, 28, 162, 0.22), transparent 34%),
-                linear-gradient(180deg, #0b0612 0%, #050308 58%, #10071b 100%) !important;
-            background-attachment: fixed !important;
-        }
 
         #page-loader {
             background: radial-gradient(circle at center, rgba(74, 19, 117, 0.35), rgba(3, 2, 7, 0.96)) !important;
@@ -1623,6 +1616,7 @@
             letter-spacing: .055em;
             font-size: .92rem;
             text-shadow: 0 0 12px rgba(154, 53, 255, .38);
+            display: none;
         }
 
         .product-card {
@@ -1721,6 +1715,123 @@
         }
         .contact-link.telegram {
             background: linear-gradient(45deg, #229ed9 0%, #2454c6 100%) !important;
+        }
+
+
+        /* ==========================================================
+           NO NAME CLUB — OPTIONS DE COMMANDE
+           Meet Up / Livraison + adresse conditionnelle + paiement
+           ========================================================== */
+        .order-options-card {
+            margin: 18px 0 6px;
+            padding: 16px;
+            border-radius: 18px;
+            background: linear-gradient(145deg, rgba(22, 10, 34, .96), rgba(8, 4, 13, .96));
+            border: 1px solid rgba(247, 189, 61, .30);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .32), 0 0 18px rgba(154, 53, 255, .10);
+        }
+
+        .order-options-card .option-block + .option-block {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(247, 189, 61, .16);
+        }
+
+        .order-options-card .option-title {
+            display: block;
+            margin: 0 0 10px;
+            color: var(--nnc-gold-light);
+            font-size: .95rem;
+            font-weight: 800;
+            letter-spacing: .035em;
+            text-transform: uppercase;
+        }
+
+        .fulfillment-options,
+        .cart-payment-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .fulfillment-btn,
+        .cart-payment-btn {
+            width: 100%;
+            min-height: 52px;
+            padding: 12px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(247, 189, 61, .24);
+            background: linear-gradient(145deg, rgba(35, 16, 51, .96), rgba(14, 7, 22, .96));
+            color: #d9cfe6;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease;
+        }
+
+        .fulfillment-btn:active,
+        .cart-payment-btn:active {
+            transform: scale(.98);
+        }
+
+        .fulfillment-btn.active,
+        .cart-payment-btn.active {
+            color: #fff8e8;
+            border-color: rgba(255, 224, 154, .86);
+            background: linear-gradient(135deg, #6e20b4 0%, #a83cff 58%, #d99a24 100%);
+            box-shadow: 0 0 16px rgba(154, 53, 255, .28);
+        }
+
+        #delivery-address-wrap {
+            display: none;
+            margin-top: 12px;
+        }
+
+        #delivery-address-wrap.visible {
+            display: block;
+        }
+
+        #delivery-address {
+            width: 100%;
+            min-height: 96px;
+            box-sizing: border-box;
+            resize: vertical;
+            padding: 13px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(247, 189, 61, .28);
+            outline: none;
+            background: rgba(14, 7, 22, .92);
+            color: #fff8e8;
+            font: inherit;
+            line-height: 1.4;
+        }
+
+        #delivery-address::placeholder {
+            color: #aa9cb8;
+        }
+
+        #delivery-address:focus {
+            border-color: rgba(255, 224, 154, .82);
+            box-shadow: 0 0 0 2px rgba(154, 53, 255, .17);
+        }
+
+        .option-help {
+            margin: 8px 2px 0;
+            color: var(--hint-color);
+            font-size: .78rem;
+            line-height: 1.35;
+        }
+
+        .confirmation-order-options {
+            width: 100%;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(247, 189, 61, .18);
+            text-align: center;
+            line-height: 1.55;
+        }
+
+        .confirmation-order-options strong {
+            color: var(--nnc-gold-light);
         }
 
     </style>
@@ -1982,6 +2093,30 @@
         </div>
         <div class="page-content">
             <div id="cart-items-container">
+            </div>
+
+            <div class="order-options-card" id="order-options-card">
+                <div class="option-block">
+                    <span class="option-title">📍 Mode de récupération</span>
+                    <div class="fulfillment-options">
+                        <button type="button" class="fulfillment-btn" data-fulfillment="Meet Up">🤝 MEET UP</button>
+                        <button type="button" class="fulfillment-btn" data-fulfillment="Livraison">🚚 LIVRAISON</button>
+                    </div>
+
+                    <div id="delivery-address-wrap">
+                        <textarea id="delivery-address" maxlength="350"
+                            placeholder="Adresse complète de livraison : numéro, rue, ville, code postal, bâtiment / étage si besoin..."></textarea>
+                        <p class="option-help">L’adresse sera ajoutée automatiquement au message WhatsApp.</p>
+                    </div>
+                </div>
+
+                <div class="option-block">
+                    <span class="option-title">💳 Mode de paiement</span>
+                    <div class="cart-payment-options">
+                        <button type="button" class="cart-payment-btn payment-btn active" data-method="Espèce">💵 ESPÈCE</button>
+                        <button type="button" class="cart-payment-btn payment-btn" data-method="Crypto">₿ CRYPTO</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="cart-actions">
