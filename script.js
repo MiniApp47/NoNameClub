@@ -1414,9 +1414,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Met à jour le compteur du panier (inchangé)
   function updateCartCount() {
+    // Nombre TOTAL d'articles dans le panier (quantités comprises)
     const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const cartCountElements = document.querySelectorAll(".cart-count");
-    cartCountElements.forEach((el) => {
+
+    const navCart = document.getElementById("nav-cart");
+    const navCount = navCart ? navCart.querySelector(".nav-cart-count") : null;
+
+    if (navCart && navCount) {
+      navCount.innerText = count;
+
+      if (count > 0) {
+        // Dès qu'il y a un article : le nombre remplace l'icône panier
+        navCart.classList.add("has-items");
+        navCount.style.display = "flex";
+      } else {
+        // Panier vide : on remet l'icône panier
+        navCart.classList.remove("has-items");
+        navCount.style.display = "none";
+      }
+
+      navCart.setAttribute(
+        "aria-label",
+        count > 0
+          ? `Panier, ${count} article${count > 1 ? "s" : ""}`
+          : "Panier vide"
+      );
+    }
+
+    // Compatibilité si un autre compteur .cart-count est ajouté ailleurs
+    document.querySelectorAll(".cart-count:not(.nav-cart-count)").forEach((el) => {
       el.innerText = count;
       el.style.display = count > 0 ? "flex" : "none";
     });
@@ -1738,6 +1764,55 @@ document.addEventListener("DOMContentLoaded", function () {
 
       showPage(pageId);
     });
+  });
+
+
+  // --- FIX MOBILE : boutons d'options du panier ---
+  // Certains WebView mobiles Telegram peuvent mal remonter le "click"
+  // délégué au body. On écoute donc directement le touchend.
+  document.querySelectorAll(".fulfillment-btn").forEach((btn) => {
+    btn.addEventListener(
+      "touchend",
+      function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        fulfillmentMethod = this.dataset.fulfillment;
+        syncOrderOptionsUI();
+
+        try {
+          tg.HapticFeedback.selectionChanged();
+        } catch (_) {}
+
+        if (fulfillmentMethod === "Livraison") {
+          const addressInput = document.getElementById("delivery-address");
+          if (addressInput) {
+            setTimeout(() => {
+              addressInput.focus();
+            }, 120);
+          }
+        }
+      },
+      { passive: false },
+    );
+  });
+
+  document.querySelectorAll(".payment-btn").forEach((btn) => {
+    btn.addEventListener(
+      "touchend",
+      function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        paymentMethod = this.dataset.method;
+        syncOrderOptionsUI();
+
+        try {
+          tg.HapticFeedback.selectionChanged();
+        } catch (_) {}
+      },
+      { passive: false },
+    );
   });
 
   // Clics sur le reste de la page

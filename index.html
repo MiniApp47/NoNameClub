@@ -1834,6 +1834,68 @@
             color: var(--nnc-gold-light);
         }
 
+    
+        /* ==========================================================
+           FIX MOBILE — BOUTONS PANIER TACTILES
+           ========================================================== */
+        #page-cart .order-options-card {
+            position: relative;
+            z-index: 20;
+            pointer-events: auto !important;
+        }
+
+        #page-cart .fulfillment-options,
+        #page-cart .cart-payment-options,
+        #page-cart .option-block {
+            position: relative;
+            z-index: 21;
+            pointer-events: auto !important;
+        }
+
+        #page-cart .fulfillment-btn,
+        #page-cart .cart-payment-btn {
+            position: relative;
+            z-index: 22;
+            pointer-events: auto !important;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        /* ==========================================================
+           PANIER NAVBAR — LE NOMBRE REMPLACE L'ICÔNE
+           ========================================================== */
+        #nav-cart .nav-cart-count {
+            position: static !important;
+            min-width: 22px !important;
+            width: auto;
+            height: 20px !important;
+            padding: 0 5px !important;
+            margin-bottom: 5px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #ffd86d, #e69a16) !important;
+            color: #120817 !important;
+            border: 1px solid rgba(255, 239, 190, .9) !important;
+            font-size: .82rem !important;
+            font-weight: 900 !important;
+            line-height: 1 !important;
+            box-shadow: 0 0 10px rgba(154, 53, 255, .42) !important;
+        }
+
+        #nav-cart.has-items > svg {
+            display: none !important;
+        }
+
+        #nav-cart.has-items .nav-cart-count {
+            display: flex !important;
+        }
+
     </style>
 </head>
 
@@ -2019,7 +2081,7 @@
 
     <div id="page-loader" class="page active">
         <div class="loader-box">
-            <img src="LogoReel.jpg" alt="Logo">
+            <img src="Logo.jpg" alt="Logo">
             <div class="app-name">👑 NO NAME CLUB 🔱</div>
             <div class="loading-text">Chargement de No Name Club...</div>
 
